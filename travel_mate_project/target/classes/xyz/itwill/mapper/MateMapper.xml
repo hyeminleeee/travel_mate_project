@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.itwill.mapper.MateMapper">
+	<insert id="insertMate">
+		<selectKey resultType="int" keyProperty="mateNo" order="BEFORE">
+			select mate_seq.nextval from dual
+		</selectKey>
+		INSERT INTO mate (mate_no, board_no, user_id) 
+        VALUES (#{mateNo}, #{boardNo}, #{userId})
+	</insert>
+	
+	<select id="selectMateList" resultType="Mate">
+		select mate_no, board_no, user_id, mate_status from mate 
+			where board_no=#{boardNo} order by mate_no desc
+	</select>
+	
+	<select id="selectMateWaitList" resultType="Mate">
+		select mate_no, board_no, user_id from mate 
+			where board_no=#{boardNo} and mate_status=0 order by mate_no desc
+	</select>
+	
+	<select id="selectMateAcceptList" resultType="Mate">
+		select mate_no, board_no, user_id from mate 
+			where board_no=#{boardNo} and mate_status=1 order by mate_no desc
+	</select>
+	
+	<delete id="deleteMateByNo">
+		delete from mate where mate_no=#{mateNo}
+	</delete>
+	
+	<update id="acceptMateByNo">
+		update mate set mate_status=1 where mate_no = #{mateNo}
+	</update>
+	
+	<!-- 내가 참여한 동행모집 -->
+	<select id="selectJoinMateListByUserIdAndStatus" resultType="MateBoard">
+		select * from (select rownum rn, course.* from (
+			SELECT 
+		    mb.board_no, 
+		    mb.board_writer, 
+		    mb.board_title, 
+		    mb.board_content, 
+		    mb.board_regdate, 
+		    mb.board_image, 
+		    mb.board_count, 
+		    tu.user_nickname, 
+		    mb.mate_maxcount,
+		    NVL(reply_counts.reply_count, 0) AS reply_count,
+		    NVL(like_counts.like_count, 0) AS like_count
+		FROM 
+		    mate m
+		JOIN 
+		    mate_board mb ON m.board_no = mb.board_no
+		JOIN 
+		    travel_user tu ON mb.board_writer = tu.user_id
+		LEFT JOIN (
+		    SELECT 
+		        board_no, 
+		        COUNT(*) AS reply_count 
+		    FROM 
+		        mate_reply 
+		    GROUP BY 
+		        board_no
+		) reply_counts ON mb.board_no = reply_counts.board_no
+		LEFT JOIN (
+		    SELECT 
+		        board_no, 
+		        COUNT(*) AS like_count 
+		    FROM 
+		        mate_boardlike 
+		    WHERE 
+		        like_status = 1
+		    GROUP BY 
+		        board_no
+		) like_counts ON mb.board_no = like_counts.board_no
+		WHERE 
+		    m.user_id = #{userId} AND m.mate_status = 1
+		ORDER BY 
+		    mb.board_regdate DESC
+		) course) where rn between #{startRow} and #{endRow}
+	</select>
+	
+	 <!-- 내가 참여한 동행모집 총 갯수 -->
+    <select id="selectTotalJoinMateCountByUserIdAndStatus" resultType="int">
+    	SELECT COUNT(*)
+        FROM mate m
+        JOIN mate_board mb ON m.board_no = mb.board_no
+        WHERE m.user_id = #{userId} AND m.mate_status = 1
+    </select>
+	
+	
+</mapper>

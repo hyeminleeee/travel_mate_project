@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.itwill.mapper.QnaReplyMapper">
+    <insert id="insertQnaReply">
+        <selectKey resultType="int" keyProperty="num" order="BEFORE">
+            select qna_reply_seq.nextval from dual
+        </selectKey>
+        insert into qna_reply values(#{num}, #{writer}, #{content}, sysdate, #{boardNum})
+    </insert>
+    
+    <select id="selectQnaReplyList" resultType="QnaReply">
+        select num, writer, content,regdate, board_num, USER_NAME from qna_reply join 
+			travel_user on writer=USER_ID where board_num=#{boardNum} order by num desc
+    </select>
+</mapper>

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.itwill.mapper.CourseMapperSub">
+
+	<!-- list 페이지 사용 명령 -->
+	<!-- 코스 리스트 가져오기 -->
+	<select id="selectCourseListByUserId" resultType="course">
+		select * from (select rownum rn, course.* from (
+		select 
+		    course.course_no, 
+		    course.course_title, 
+		    course.course_writer, 
+		    course.course_regdate,
+		    course.course_update, 
+		    course.course_concept, 
+		    course.course_count, 
+		    course.course_image,
+		    NVL(reply_counts.reply_count, 0) as reply_count,
+		    NVL(like_counts.like_count, 0) as like_count
+		from course
+		join travel_user on course.course_writer = travel_user.user_id
+		left join (
+		    select course_no, count(*) as reply_count 
+		    from course_reply 
+		    group by course_no
+		) reply_counts on course.course_no = reply_counts.course_no
+		left join (
+		    select course_no, count(*) as like_count 
+		    from course_like 
+		    where like_status = 1
+		    group by course_no
+		) like_counts on course.course_no = like_counts.course_no
+		where course.course_writer = #{userId}
+		order by course.course_no desc
+	) course) where rn between #{startRow} and #{endRow}
+	</select>
+	
+	 <!-- 특정 사용자가 작성한 코스의 총 개수 조회 -->
+    <select id="selectTotalCourseCountById" resultType="int">
+    	select count(*) from course join travel_user on course_writer = travel_user.user_id 
+where travel_user.user_id = #{userId} 
+    </select>
+    
+    <!-- 내가 좋아요 누른 코스추천글 리스트 -->
+    <select id="selectLikeCourseListByUserId" resultType="course">
+		select * from (select rownum rn, course_like.* from (
+		SELECT 
+		    co.course_no, 
+		    co.course_title, 
+		    co.course_writer, 
+		    co.course_regdate,
+		    co.course_update, 
+		    co.course_concept, 
+		    co.course_count, 
+		    co.course_image, 
+		    NVL(reply_counts.reply_count, 0) AS reply_count,
+		    NVL(like_counts.like_count, 0) AS like_count,
+		    tu.user_nickname  -- 작성자의 닉네임 추가
+		FROM 
+		    course co
+		JOIN 
+		    course_like cl ON co.course_no = cl.course_no
+		JOIN 
+		    travel_user tu ON co.course_writer = tu.user_id  -- 작성자 닉네임을 가져오기 위한 JOIN
+		LEFT JOIN (
+		    SELECT 
+		        course_no, 
+		        COUNT(*) AS reply_count 
+		    FROM 
+		        course_reply 
+		    GROUP BY 
+		        course_no
+		) reply_counts ON co.course_no = reply_counts.course_no
+		LEFT JOIN (
+		    SELECT 
+		        course_no, 
+		        COUNT(*) AS like_count 
+		    FROM 
+		        course_like 
+		    WHERE 
+		        like_status = 1
+		    GROUP BY 
+		        course_no
+		) like_counts ON co.course_no = like_counts.course_no
+		WHERE 
+		    cl.user_id = #{userId} AND cl.like_status = 1
+		ORDER BY 
+		    co.course_no DESC
+		) 
+		course_like) where rn between #{startRow} and #{endRow}
+	</select>
+    
+    <!-- 내가 좋아요 누른 코스추천글 리스트 총 갯수 -->
+	   <select id="selectLikeTotalCourseCountById" resultType="int">
+    	SELECT COUNT(*)
+		FROM course_like cl
+		INNER JOIN course co ON co.course_no = cl.course_no
+		WHERE cl.user_id = 'xyz789' 
+		  AND cl.like_status = 1
+    </select>
+   
+</mapper>

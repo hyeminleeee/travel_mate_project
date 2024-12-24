@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tiles-definitions PUBLIC "//Apache Software Foundation//DTD Tiles Congiguration 3.0/EN"
+	"http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+<tiles-definitions>	
+	<definition name="main" template="/WEB-INF/views/layout/template.jsp">
+		<put-attribute name="header" value="/WEB-INF/views/layout/header.jsp"/>
+		<put-attribute name="content" value="/WEB-INF/views/layout/main.jsp"/>
+		<put-attribute name="footer" value="/WEB-INF/views/layout/footer.jsp"/>
+	</definition>
+	
+	<definition name="admin" extends="main">
+		<put-attribute name="header" value="/WEB-INF/views/layout/header_admin.jsp"/>
+		<put-attribute name="content" value="/WEB-INF/views/layout/main_admin.jsp"/>
+		<put-attribute name="footer" value="/WEB-INF/views/layout/footer_admin.jsp"/>
+	</definition>
+	
+	<definition name="admin/*" extends="admin">
+		<put-attribute name="content" value="/WEB-INF/views/admin/{1}.jsp"/>
+	</definition>
+	
+	<definition name="admin/*/*" extends="admin">
+		<put-attribute name="content" value="/WEB-INF/views/admin/{1}/{2}.jsp"/>
+	</definition>
+	
+	<!-- definition 엘리먼트의 name 속성값을 [*]로 설정한 경우 요청 처리 메소드의 ["값"] 형식으로
+	반환되는 모든 뷰이름을 제공받아 응답 처리할 수 있다. -->
+	<definition name="*" extends="main">
+		<put-attribute name="content" value="/WEB-INF/views/{1}.jsp"/>
+	</definition>
+	
+	<!-- definition 엘리먼트의 name 속성값을 [*/*]로 설정한 경우 요청 처리 메소드의 ["값/값"]
+	 형식으로 반환되는 모든 뷰이름을 제공받아 응답 처리할 수 있다. -->
+	<definition name="*/*" extends="main">
+		<put-attribute name="content" value="/WEB-INF/views/{1}/{2}.jsp"/>
+	</definition>
+	
+	<!-- definition 엘리먼트의 name 속성값을 [*/*]로 설정한 경우 요청 처리 메소드의 ["값/값/값"]
+	 형식으로 반환되는 모든 뷰이름을 제공받아 응답 처리할 수 있다. -->
+	<definition name="*/*/*" extends="main">
+		<put-attribute name="content" value="/WEB-INF/views/{1}/{2}/{3}.jsp"/>
+	</definition>
+	
+	
+</tiles-definitions>	
+
+
+
+

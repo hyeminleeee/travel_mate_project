@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.itwill.mapper.TravelUserMapper">
+	<insert id="insertTravelUser">
+		insert into travel_user values(#{userId}, #{userPw}, #{userName}, #{userNickname}, #{userEmail}, #{userPhone}
+			, #{userIntroduction}, #{userAge}, #{userGender}, sysdate, 0, 1)
+	</insert>
+	
+	<insert id="insertTravelAuth">
+		insert into travel_auth values(#{userId}, #{userAuth})
+	</insert>
+	
+	<update id="updateTravelUser">
+		update travel_user
+		<set>
+			<if test="userPw != null and userPw != ''"><!-- "password" 이름으로 전달된 값이 있다면 -->
+				user_pw=#{userPw},
+			</if>
+			<if test="userNickname != null and userNickname != ''">
+				user_nickname=#{userNickname},
+			</if>
+			<if test="userEmail != null and userEmail != ''">
+				user_email=#{userEmail},
+			</if>
+			<if test="userPhone != null and userPhone != ''">
+				user_phone=#{userPhone},
+			</if>
+			<if test="userIntroduction != null and userIntroduction != ''">
+				user_introduction=#{userIntroduction},
+			</if>
+			<if test="userAge != null and userAge != ''">
+				user_age=#{userAge},
+			</if>
+		</set>
+		where user_id=#{userId}
+	</update>
+		
+	<!-- 
+	<resultMap type="TravelUser" id="TravelUserResultMap">
+		<id column="user_id" property="userId"/>
+	    <result column="user_pw" property="userPw"/>
+	    <result column="user_name" property="userName"/>
+	    <result column="user_nickname" property="userNickname"/>
+	    <result column="user_email" property="userEmail"/>
+	    <result column="user_phone" property="userPhone"/>
+	    <result column="user_introduction" property="userIntroduction"/>
+	    <result column="user_age" property="userAge"/>
+	    <result column="user_gender" property="userGender"/>
+	    <result column="user_regdate" property="userRegdate"/>
+	    <result column="user_status" property="userStatus"/>
+	    <result column="user_enabled" property="userEnabled"/>
+		<collection property="travelAuthList" ofType="TravelAuth">
+			<result column="userId" property="userId"/>
+			<result column="userAuth" property="userAuth"/>
+		</collection>
+	</resultMap>
+	
+	
+	<select id="selectTravelUserByUserid" resultMap="TravelUserResultMap">
+		select travel_user.user_id, user_pw, user_name, user_nickname, user_email, user_phone, user_introduction
+			, user_age, user_gender, user_regdate, user_status, user_enabled, user_auth from
+			 travel_user left join travel_auth on travel_user.user_id=travel_auth.user_id
+			 where travel_user.user_id=#{userId}
+	</select>
+	 -->
+	
+	<!-- select 명령에서 join을 쓰지 않는 방법 -->
+	<resultMap type="TravelUser" id="TravelUserResultMap">
+	    <id column="user_id" property="userId"/>
+	    <result column="user_pw" property="userPw"/>
+	    <result column="user_name" property="userName"/>
+	    <result column="user_nickname" property="userNickname"/>
+	    <result column="user_email" property="userEmail"/>
+	    <result column="user_phone" property="userPhone"/>
+	    <result column="user_introduction" property="userIntroduction"/>
+	    <result column="user_age" property="userAge"/>
+	    <result column="user_gender" property="userGender"/>
+	    <result column="user_regdate" property="userRegdate"/>
+	    <result column="user_status" property="userStatus"/>
+	    <result column="user_enabled" property="userEnabled"/>
+	    <collection property="travelAuthList" select="selectTravelAuthByUserid" column="user_id"/>
+	</resultMap> 
+	
+	<select id="selectTravelAuthByUserid" resultType="TravelAuth">
+		select user_id, user_auth from travel_auth where user_id=#{userId}
+	</select>
+	
+	<select id="selectTravelUserByUserid" resultMap="TravelUserResultMap">
+		select user_id, user_pw, user_name, user_nickname, user_email, user_phone, user_introduction
+			, user_age, user_gender, user_regdate, user_status, user_enabled from travel_user where user_id=#{userId}
+	</select>
+	
+	<select id="selectTravelUserByUserNickname" resultType="TravelUser">
+		select user_id, user_pw, user_name, user_nickname, user_email, user_phone, user_introduction
+			, user_age, user_gender, user_regdate, user_status, user_enabled from travel_user where user_nickname=#{userNickname}
+	</select>
+	
+	<!-- 전체 List -->
+	<select id="selectTravelUserList" resultType="TravelUser">
+		select user_id, user_pw, user_name, user_nickname, user_email, user_phone, user_introduction
+			, user_age, user_gender, user_regdate, user_status, user_enabled from travel_user
+			<if test="keyword != null and keyword != ''">
+				<bind name="word" value="'%'+keyword+'%'"/>
+				where ${column} like #{word}
+			</if>
+		order by user_regdate desc
+	</select>
+	
+	<!-- 회원탈퇴 관련 STATUS, ENABLED 변경 -->
+	<update id="updateDisable">
+		update travel_user
+		<set>
+			user_status=#{userStatus}, user_enabled=#{userEnabled}
+		</set>
+		where user_id=#{userId}
+	</update>
+	
+	<!-- 아이디 찾기 -->
+	<select id="selectTravelUserForFindId" parameterType="map" resultType="TravelUser">
+		select user_id, user_pw, user_name, user_nickname, user_email, user_phone, user_introduction
+			, user_age, user_gender, user_regdate, user_status, user_enabled from travel_user 
+			where user_name=#{userName} and user_email=#{userEmail}
+	</select>
+	
+</mapper>

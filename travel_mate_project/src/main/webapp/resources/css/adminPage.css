@@ -1,0 +1,16 @@
+.main_div {width:2000px;height:100%;margin:50px auto;}
+.title {font-size:18px;font-weight:bold;color:#1b2a4e;}
+.titleWord {font-size:30px;font-weight:bold;color:#1b2a4e}
+.search {text-decoration:none;color:#1b2a4e;font-weight:bold;margin:2px;}
+
+.th_custom {background:#1b2a4e !important;color:white !important;border-right:solid 1px white !important;}
+.th_custom_end {background:#1b2a4e !important;color:white !important;border-right:solid 1px white !important;}
+
+a {text-decoration:none;color:#1b2a4e;font-weight:bold;padding-top:1px;}
+
+.btn-dark {--bs-btn-bg: #1b2a4e;--bs-btn-active-bg:#152240;--bs-btn-hover-bg:#35549b;}
+
+
+#adminDiv{border:solid 1px #d8d8d8;border-radius:6px;}
+
+.titleOver{max-width:130px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;text-align:left;}

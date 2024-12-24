@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.itwill.mapper.MateBoardMapperSub">
+		<!-- list 페이지 사용 명령 -->
+	<!-- 친구모집글 리스트 가져오기 -->
+	<select id="selectMateBoardListByUserId" resultType="MateBoard">
+		select * from (select rownum rn, mate.* from (
+			SELECT 
+		    mb.board_no, 
+		    mb.board_writer, 
+		    mb.board_title, 
+		    mb.board_content, 
+		    mb.board_regdate, 
+		    mb.board_image, 
+		    mb.board_count, 
+		    u.user_nickname,
+		    NVL(reply_counts.reply_count, 0) AS reply_count,
+		    NVL(like_counts.like_count, 0) AS like_count
+		FROM 
+		    mate_board mb
+		JOIN 
+		    travel_user u ON mb.board_writer = u.user_id
+		LEFT JOIN (
+		    SELECT 
+		        board_no, 
+		        COUNT(*) AS reply_count 
+		    FROM 
+		        mate_reply 
+		    GROUP BY 
+		        board_no
+		) reply_counts ON mb.board_no = reply_counts.board_no
+		LEFT JOIN (
+		    SELECT 
+		        board_no, 
+		        COUNT(*) AS like_count 
+		    FROM 
+		        mate_boardlike 
+		    WHERE 
+		        like_status = 1
+		    GROUP BY 
+		        board_no
+		) like_counts ON mb.board_no = like_counts.board_no
+		WHERE 
+		    mb.board_writer = 'xyz789'
+		GROUP BY 
+		    mb.board_no, 
+		    mb.board_writer, 
+		    mb.board_title, 
+		    mb.board_content, 
+		    mb.board_regdate, 
+		    mb.board_image, 
+		    mb.board_count, 
+		    u.user_nickname,
+		    reply_counts.reply_count,
+		    like_counts.like_count
+		ORDER BY 
+		    mb.board_no DESC
+	) mate) where rn between #{startRow} and #{endRow}
+	</select>
+	
+	 <!-- 특정 사용자가 작성한 코스의 총 개수 조회 -->
+    <select id="selectTotalMateBoardByUserId" resultType="int">
+    	select count(*) from mate_board join travel_user on board_writer = travel_user.user_id 
+where travel_user.user_id = #{userId} 
+	</select>
+	
+   <!-- 내가 좋아요 누른 친구모집글 리스트 -->
+    <select id="selectLikeMateBoardListByUserId" resultType="MateBoard">
+		select * from (select rownum rn, mate.* from (
+		 SELECT 
+                mb.board_no, 
+                mb.board_writer, 
+                mb.board_title, 
+                mb.board_content,
+                mb.board_regdate, 
+                mb.board_image, 
+                mb.board_count, 
+                tu.user_nickname,  -- 게시글 작성자의 닉네임
+                NVL(reply_counts.reply_count, 0) AS reply_count,
+                NVL(like_counts.like_count, 0) AS like_count
+            FROM 
+                mate_board mb 
+            JOIN 
+                mate_boardlike mbl ON mb.board_no = mbl.board_no 
+            JOIN 
+                travel_user tu ON mb.board_writer = tu.user_id  -- 작성자의 닉네임 가져오기
+            LEFT JOIN (
+                SELECT 
+                    board_no, 
+                    COUNT(*) AS reply_count 
+                FROM 
+                    mate_reply 
+                GROUP BY 
+                    board_no
+            ) reply_counts ON mb.board_no = reply_counts.board_no
+            LEFT JOIN (
+                SELECT 
+                    board_no, 
+                    COUNT(*) AS like_count 
+                FROM 
+                    mate_boardlike 
+                WHERE 
+                    like_status = 1
+                GROUP BY 
+                    board_no
+            ) like_counts ON mb.board_no = like_counts.board_no
+            WHERE 
+                mbl.user_id = #{userId} AND mbl.like_status = 1
+            ORDER BY 
+                mb.board_no DESC
+		) 
+		mate) where rn between #{startRow} and #{endRow}
+	</select>
+    
+    <!-- 내가 좋아요 누른 친구모집글 리스트 총 갯수 -->
+	   <select id="selectLikeMateBoardTotalCountById" resultType="int">
+    	SELECT COUNT(*)
+        FROM mate_boardlike mbl
+        INNER JOIN mate_board mb ON mb.board_no = mbl.board_no
+        WHERE mbl.user_id = #{userId} 
+        	AND mbl.like_status = 1
+    </select>	
+</mapper>

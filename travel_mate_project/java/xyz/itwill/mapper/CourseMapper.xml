@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.itwill.mapper.CourseMapper">
+	<insert id="insertCourse"> 
+		insert into course values(#{courseNo}, #{courseTitle}, #{courseWriter}, sysdate
+			, null, #{courseConcept}, 0, #{courseImage})
+	</insert>
+   
+	<insert id="insertPlace">
+		insert into place values(#{placeNo}, #{placeOrder}, #{placeX}, #{placeY}
+			, #{placeName}, #{placeContent}, #{placeImage})
+	</insert>
+
+	<!-- course 객체의 필드명과 컬럼명 매핑하기 위한 엘리먼트 -->
+	<resultMap type="course" id="courseResultMap">
+		<id column="course_no" property="courseNo"/>
+		<result column="course_title" property="courseTitle"/>
+		<result column="course_writer" property="courseWriter"/>
+		<result column="course_regdate" property="courseRegdate"/>
+		<result column="course_update" property="courseUpdate"/>
+		<result column="course_concept" property="courseConcept"/>
+		<result column="course_count" property="courseCount"/>
+		<result column="course_image" property="courseImage"/>
+		<result column="rn" property="rownum"/>
+		<collection property="placeList" ofType="place" select="selectPlaceByPlaceNo" column="course_no"/>
+	</resultMap>
+   
+	<resultMap type="place" id="placeResultMap">
+		<result column="place_content" property="placeContent"/>
+	</resultMap>
+   
+	<!-- resultMap collection 엘리먼트에서 호출할 쿼리 -->
+	<select id="selectPlaceByPlaceNo" resultType="place">
+		select place_no, place_order, place_x, place_y, place_name, place_content
+			, place_image from place where place_no=#{courseNo} order by place_order
+	</select>
+   
+	<select id="selectCourseByCourseNo" resultMap="courseResultMap">
+		select course_no, course_title, course_writer, course_regdate, course_update
+			, course_concept, course_count, course_image from course where course_no=#{courseNo}
+	</select>
+
+	<select id="selectCourseSeq" resultType="int">
+		select course_Seq.nextval from dual
+	</select>
+   
+	<!-- join travel_user on course_writer=user_id -->
+	<!-- list 페이지 사용 명령 -->
+	<!-- 코스 리스트 가져오기 -->
+	<select id="selectCourseList" resultType="course" resultMap="courseResultMap">
+	    select * from (
+	        select rownum rn, sorted_courses.* 
+	        from (
+	            select course.*, NVL(reply_counts.reply_count, 0) as reply_count, NVL(like_counts.like_count, 0) as like_count
+	            from (
+	                <choose>
+	                    <when test="column == 'place_content'">
+	                        select coursefilter.*
+	                        from (
+	                            select course.course_no, course.course_title, course.course_writer, 
+	                                   course.course_regdate, course.course_update, course.course_concept, 
+	                                   course.course_count, course.course_image, 
+	                                   row_number() over (partition by course.course_no order by place.place_order) as crn
+	                            from course
+	                            join place on course.course_no = place.place_no
+	                            <if test="keyword != null and keyword != ''">
+	                                <bind name="word" value="'%' + keyword + '%'" />
+	                                where place_content like #{word}
+	                            </if>
+	                        ) coursefilter
+	                        where crn = 1
+	                    </when>
+	                    <otherwise>
+	                        select course.*
+	                        from (
+	                            select course_no, course_title, course_writer, 
+	                                   course_regdate, course_update, course_concept, 
+	                                   course_count, course_image
+	                            from course
+	                            <if test="keyword != null and keyword != ''">
+	                                <bind name="word" value="'%' + keyword + '%'" />
+	                                where ${column} like #{word}
+	                            </if>
+	                            order by course_no desc
+	                        ) course
+	                    </otherwise>
+	                </choose>
+	            ) course
+	            left join (select course_no, count(*) as reply_count from course_reply group by course_no) reply_counts
+	                on course.course_no = reply_counts.course_no
+	            left join (select course_no, count(*) as like_count from course_like where like_status = 1 group by course_no) like_counts
+	                on course.course_no = like_counts.course_no
+	            <choose>
+	                <when test="sort eq 'like_count' || sort eq 'reply_count'">
+	                    order by NVL(${sort}, 0) desc
+	                </when>
+	                <otherwise>
+	                    order by course.course_no desc
+	                </otherwise>
+	            </choose>
+	        ) sorted_courses
+	    )
+	    where rn between #{startRow} and #{endRow}
+	</select>
+
+
+
+
+	<!-- 총 코스 수 가져오기 -->
+	<select id="selectCourseCount" resultType="int">
+		select count(*) from 
+		<choose>
+			<when test="column == 'place_content'">
+				(select rownum rn, coursefilter.* from (select course.course_no, course.course_title, course.course_writer, course.course_regdate, course.course_update, 
+				course.course_concept, course.course_count, course.course_image, row_number() over (partition by course.course_no order by place.place_order) 
+				as crn  from course join place on course.course_no = place.place_no 
+					
+				<if test="keyword != null and keyword != ''">
+					<bind name="word" value="'%' + keyword + '%'" />
+					where place_content like #{word}
+				</if>
+				) coursefilter where crn = 1) course
+			</when>
+			<otherwise>
+				course
+				<if test="keyword != null and keyword != ''">
+					<bind name="word" value="'%' + keyword + '%'" />
+					where ${column} like #{word}
+				</if>
+			</otherwise>
+		</choose>
+	</select>
+
+	<!-- update Course, Place -->
+	<update id="updateCourse">
+		update course set course_Title=#{courseTitle}, course_Update=sysdate, course_Concept=#{courseConcept}
+		<if test="courseImage != null and courseImage != ''">
+			, course_image=#{courseImage} 
+		</if>
+		where course_no=#{courseNo}
+	</update>
+      
+	<update id="updatePlace">
+		update place set place_x=#{placeX}, place_y=#{placeY}, place_name=#{placeName}, place_content=#{placeContent}
+		<if test="placeImage != null and placeImage != ''">
+			, place_image=#{placeImage}
+		</if>
+		where place_no=#{placeNo} and place_order=#{placeOrder}
+	</update>
+   
+	<!-- delete Course, Place -->
+	<delete id="deleteCourse">
+		delete from course where course_no=#{courseNo}
+	</delete>
+   
+	<!-- course 삭제 시 연결되어 있는 place 자동 삭제
+	<delete id="deletePlace">
+		delete from place where place_no=#{placeNo} and place_order=#{placeOrder}
+	</delete>
+	-->
+    
+	<update id="updateCourseCount">
+		update course set course_count=course_count+1 where course_no=#{courseNo}
+	</update>
+	
+	<select id="selectAdminCourseList" resultType="course">
+		select * from (select rownum rn, courselist.* from (select course.*, reply_count from course left join (select course_no, count(*) as reply_count from course_reply group by course_no) 
+reply_counts on course.course_no = reply_counts.course_no order by course.course_no desc) courselist) where rn between 1 and 20
+	</select>
+	
+	<select id="selectCourseLikeCount" resultType="course">
+		select course.*, coalesce(like_count, 0) as like_count from course left join 
+			(select course_no, count(*) as like_count from course_like group by course_no) 
+			courselike on course.course_no = courselike.course_no where course.course_no=#{courseNo}
+	</select>  
+</mapper>

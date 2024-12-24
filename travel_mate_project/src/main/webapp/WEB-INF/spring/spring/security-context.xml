@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 기본 네임스페이스를 [security]로 설정하여 사용하는 것을 권장 -->
+<!-- [security] 네임스페이스의 spring-security.xsd 파일에서 제공하는 다수의 엘리먼트 사용 -->
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/security https://www.springframework.org/schema/security/spring-security.xsd
+		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+
+ 	<http auto-config="true" use-expressions="true">
+ 		
+ 		<headers>
+ 			<frame-options policy="SAMEORIGIN"/>
+ 		</headers>
+ 	
+
+ 		<intercept-url pattern="/user/**" access="hasRole('ROLE_USER')"/>
+ 		<intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')"/>
+ 		<!-- <intercept-url pattern="/course/write" access="hasRole('ROLE_USER')"/> -->
+ 		<!-- <intercept-url pattern="/mate/register" access="hasRole('ROLE_USER')"/> -->
+ 		<intercept-url pattern="/**" access="permitAll"/>
+ 		
+ 		
+		<form-login login-page="/account/login" login-processing-url="/account/login"
+		 username-parameter="userId" password-parameter="userPw"
+		 default-target-url="/"
+		 authentication-failure-handler-ref="customLoginFailureHandler"/>
+ 		 
+ 		<logout logout-url="/logout" logout-success-url="/" invalidate-session="true"
+ 		 	delete-cookies="JSESSIONID"/>
+ 		
+ 		<access-denied-handler error-page="/access_denied"/>
+ 		
+ 		<session-management>
+ 			<concurrency-control max-sessions="1" expired-url="/session_error"/>
+ 		</session-management>
+ 		
+ 	</http>
+ 	
+ 	
+ 	<authentication-manager>
+ 		<authentication-provider user-service-ref="customUserDetailsService">
+ 			<password-encoder ref="passwordEncoder"/>
+ 		</authentication-provider>
+ 	</authentication-manager> 
+ 	
+ 	<context:component-scan base-package="xyz.itwill.auth"/>
+ 	<context:component-scan base-package="xyz.itwill.dao"/>
+ 	 
+ 	<!-- BCryptPasswordEncoder 클래스 : 문자열을 암호화 처리하거나 암호화 처리된 문자열을 비교하여
+ 	비교결과를 제공하기 위한 클래스 -->
+ 	<beans:bean class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" id="passwordEncoder"/>
+ 	 
+ 	 
+</beans:beans>
+
+
+
+
+
+

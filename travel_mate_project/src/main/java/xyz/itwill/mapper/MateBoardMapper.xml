@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.itwill.mapper.MateBoardMapper">
+	<insert id="insertMateBoard">
+		<selectKey resultType="int" keyProperty="boardNo" order="BEFORE">
+			select mate_board_seq.nextval from dual
+		</selectKey>
+		insert into mate_board values(#{boardNo}, #{boardWriter}, #{boardTitle}, #{boardContent}, sysdate
+			, #{boardImage}, 0
+		<choose>
+			<when test="courseNo != null and courseNo !=''">
+				,#{courseNo}
+			</when>
+			<otherwise>
+				,''
+			</otherwise>
+		</choose>
+		, #{mateMaxCount}
+		)
+	</insert>
+	
+	<resultMap type="mateboard" id="mateboardResultMap">
+		<id column="board_no" property="boardNo"/>
+		<result column="board_writer" property="boardWriter"/>
+		<result column="board_title" property="boardTitle"/>
+		<result column="board_content" property="boardContent"/>
+		<result column="board_regdate" property="boardRegdate"/>
+		<result column="board_image" property="boardImage"/>
+		<result column="board_count" property="boardCount"/>
+		<result column="course_no" property="courseNo"/>
+		<result column="rn" property="rownum"/>
+		<result column="mate_maxcount" property="mateMaxCount"/>
+		<result column="mate_count" property="mateCount"/>
+	</resultMap>
+	
+	<update id="updateMateBoard">
+		update mate_board set board_title=#{boardTitle}, board_content=#{boardContent}, board_regdate=sysdate 
+		<choose>
+			<when test="boardImage != null and boardImage != ''">
+				, board_image=#{boardImage} 
+			</when>
+			<otherwise>
+				, board_image='' 
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="courseNo != null and courseNo !=''">
+				,course_no=#{courseNo}
+			</when>
+			<otherwise>
+				,course_no=''
+			</otherwise>
+		</choose>
+		,mate_maxcount=#{mateMaxCount}
+		where board_no=#{boardNo}
+	</update>
+	
+	<delete id="deleteMateBoard">
+		delete from mate_board where board_no=#{boardNo}
+	</delete>
+	
+	<select id="selectMateBoardByNo" resultMap="mateboardResultMap">
+		select board_no, board_writer, board_title, board_content, board_regdate, user_name name, board_image, board_count, course_no, mate_maxcount  
+		from mate_board
+		join travel_user on board_writer=user_id where board_no=#{boardNo}
+	</select>
+	
+	<select id="selectMateBoardCount" resultType="int">
+		select count(*) from mate_board join travel_user on board_writer=user_id
+		<if test="keyword != null and keyword != ''">
+			<bind name="word" value="'%'+keyword+'%'"/>
+			where ${column} like #{word}
+		</if>
+	</select> 
+	
+	<select id="selectMateBoardList" resultMap="mateboardResultMap">
+		select * from (
+			select rownum rn, board.* from (
+				select mateboard.*, NVL(reply_counts.reply_count, 0) as reply_count, NVL(like_counts.like_count, 0) as like_count,
+				NVL(mate_counts.mate_count, 0) as mate_count
+				from (select * from mate_board join travel_user on board_writer=user_id
+				<if test="keyword != null and keyword != ''">
+					<bind name="word" value="'%'+keyword+'%'"/>
+					where ${column} like #{word}
+				</if>
+				) mateboard
+				left join (select board_no, count(*) as reply_count from mate_reply group by board_no) reply_counts 
+	                on mateboard.board_no = reply_counts.board_no 
+	            left join (select board_no, count(*) as like_count from mate_boardlike where like_status = 1 group by board_no) like_counts 
+	                on mateboard.board_no = like_counts.board_no 
+	            left join (
+		            select m.board_no, count(m.mate_no) as mate_count 
+		            from mate m
+		            where m.mate_status = 1
+		            group by m.board_no
+		        ) mate_counts on mateboard.board_no = mate_counts.board_no
+				order by mateboard.board_no desc
+			) board
+		) where rn between #{startRow} and #{endRow}
+	</select>
+	
+	<update id="updateMateBoardCount">
+		update mate_board set board_count=board_count+1 where board_no=#{boardNo}
+	</update>
+	
+	<select id="selectAdminMateBoardList" resultType="mateboard">
+		select * from (select rownum rn, mate_board_list.* from (select mate_board.*, mate_count from mate_board left join (select board_no, count(*) as mate_count from mate group by board_no)
+		mate_counts on mate_board.board_no = mate_counts.board_no order by mate_board.board_no desc) mate_board_list) where rn between 1 and 10
+	</select>
+</mapper>

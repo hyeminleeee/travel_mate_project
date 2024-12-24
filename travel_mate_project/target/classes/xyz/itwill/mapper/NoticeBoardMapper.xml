@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.itwill.mapper.NoticeBoardMapper">
+
+    <insert id="insertNoticeBoard">
+        <selectKey resultType="int" keyProperty="noticeNum" order="BEFORE">
+            SELECT travel_notice_seq.nextval FROM dual
+        </selectKey>
+        INSERT INTO travel_notice(notice_num, notice_id, notice_subject, notice_content, notice_count, notice_regdate, notice_status)
+        VALUES (#{noticeNum}, #{noticeId}, #{noticeSubject}, #{noticeContent}, #{noticeCount}, sysdate, 1)
+    </insert>
+
+    <update id="updateNoticeBoard">
+        UPDATE travel_notice 
+        SET notice_subject = #{noticeSubject}, notice_content = #{noticeContent} 
+        WHERE notice_num = #{noticeNum}
+    </update>
+
+   <update id="updateStatusNoticeBoard">
+    UPDATE travel_notice 
+    SET notice_status = #{noticeStatus} 
+    WHERE notice_num = #{noticeNum}
+	</update>
+	
+    <delete id="deleteNoticeBoard">
+        update travel_notice set notice_status=2 where notice_num=#{noticeNum}
+    </delete>
+
+    <select id="selectNoticeBoardByNum" resultType="NoticeBoard">
+        SELECT notice_num, notice_id, notice_subject, notice_content, notice_count, notice_regdate, notice_status, user_name 
+        FROM travel_notice 
+        JOIN travel_user ON travel_notice.notice_id = travel_user.user_id 
+        WHERE notice_num = #{noticeNum}
+    </select>
+
+    <select id="selectNoticeBoardCount" resultType="int">
+        SELECT COUNT(*) 
+        FROM travel_notice 
+        JOIN travel_user ON travel_notice.notice_id = travel_user.user_id
+        <if test="keyword != null and keyword != ''">
+            <bind name="word" value="'%' + keyword + '%'"/>
+            WHERE ${column} LIKE #{word}
+        </if>
+    </select>
+
+    <select id="selectNoticeBoardList" resultType="NoticeBoard">
+        SELECT * FROM (
+            SELECT rownum rn, board.* 
+            FROM (
+                SELECT notice_num, notice_id, notice_subject, notice_content, notice_count, notice_regdate, notice_status, user_name 
+                FROM travel_notice 
+                JOIN travel_user ON notice_id = user_id
+                <if test="keyword != null and keyword != ''">
+                    <bind name="word" value="'%' + keyword + '%'"/>
+                    WHERE ${column} LIKE #{word}
+                </if>
+                ORDER BY notice_status ASC, notice_num DESC
+                <!--  ORDER BY notice_num DESC -->
+            ) board
+        ) 
+        WHERE rn BETWEEN #{startRow} AND #{endRow}
+    </select>
+	
+	<update id="incrementNoticeCount" parameterType="int">
+	    UPDATE travel_notice
+	    SET notice_count = notice_count + 1
+	    WHERE notice_num = #{noticeNum}
+	</update>
+	
+	<select id="NselectDeletedBoardCount" resultType="int">
+        SELECT COUNT(*)
+        FROM travel_notice
+        WHERE notice_status = 2
+    </select>
+	
+</mapper>

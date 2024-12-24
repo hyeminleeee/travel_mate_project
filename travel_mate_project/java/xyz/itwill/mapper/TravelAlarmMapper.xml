@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.itwill.mapper.TravelAlarmMapper">
+	<select id="selectUserAlarmByUserId" resultType="TravelAlarm">
+        select * from (select rownum rn, alarm.* from (
+	        select alarm_id, alarm_user_id, target_user_id, target_course_no, target_board_no, action_type, 
+	        alarm_date, alarm_read,
+	        travel_user.user_nickname AS targetUserNickname, 
+	        course.course_title AS targetCourseTitle, 
+	        mate_board.board_title AS targetBoardTitle
+	        from travel_alarm
+	        left join travel_user on travel_alarm.target_user_id = travel_user.user_id
+	        left join course on travel_alarm.target_course_no = course.course_no
+	        left join mate_board on travel_alarm.target_board_no = mate_board.board_no
+	        WHERE alarm_user_id = #{userId} ORDER BY alarm_date DESC
+        ) alarm) where rn between #{startRow} and #{endRow}
+    </select>	
+    
+     <!-- 알림의 총 개수 조회 -->
+    <select id="selectTotalAlarmByUserId" resultType="int">
+    	select count(*) from travel_alarm join travel_user on alarm_user_id = travel_user.user_id 
+	where travel_user.user_id = #{userId} 
+	</select>
+	
+	<!-- 신청 여부 확인 -->
+	<select id="selectAlarmCount" resultType="int">
+		select count(*) from travel_alarm 
+		where target_user_id = #{targetUserId} and travel_alarm.target_board_no=#{targetBoardNo}
+	</select>
+	
+	<!-- 읽음처리 -->
+	<update id="updateAlarmRead">
+		 UPDATE travel_alarm SET alarm_read = 0 WHERE alarm_id = #{alarmId}
+	</update>
+	
+	<!-- 친구모집 동행신청 행 추가 -->
+	<insert id="insertMateSubmitAlarm">
+		 <selectKey resultType="int" keyProperty="alarmId" order="BEFORE">
+	        SELECT travel_alarm_seq.NEXTVAL FROM dual
+	    </selectKey>
+	    INSERT INTO travel_alarm (
+	        alarm_id, alarm_user_id, target_user_id, target_course_no, target_board_no, action_type, alarm_date, alarm_read
+	    ) VALUES (
+	        #{alarmId}, #{alarmUserId}, #{targetUserId}, NULL, #{targetBoardNo}, #{actionType}, SYSDATE, 1
+	    )
+	</insert>
+    
+</mapper>

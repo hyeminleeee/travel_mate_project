@@ -1,0 +1,216 @@
+@charset "UTF-8";
+
+/*
+.wrap_tbl{padding:35px 30px;}
+.tbl_board{width:100%;text-align:center;table-layout:fixed;}
+.tbl_board .board_num{width:6%;}
+.tbl_board .board_title{width:50%;}
+.tbl_board .board_date{width:13%;}
+.tbl_board .board_writer{width:12%;}
+.tbl_board .board_count{width:6%;}
+.tbl_board th{padding:10px 8px;border-bottom:1px solid #000;box-sizing:border-box;}
+.tbl_board td{width:100%;padding:10px 8px;box-sizing:border-box;}
+.tbl_board .board_tit{padding:10px 20px;text-align:left;white-space:nowrap;}
+.tbl_board .link_tit{display:block;overflow:hidden;width:100%;white-space;nowrap;text-overflow:ellipsis;}
+*/
+
+.container.board{padding:40px 0;}
+.container.board .paging{padding:25px 0 10px;text-align:center;}
+.container.board .tit_board{padding:20px 0;}
+.container.board .wrap_btn{padding-top:20px;text-align:center;}
+
+
+h1 {
+    text-align: left;
+    color: #333;
+}
+
+.commontable{
+		width: 100%;
+        border-collapse: collapse;
+        background: white;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
+        
+}
+.commontable tr, .commontable td{
+		border: 1px solid #ddd;
+        text-align: left;
+        padding: 10px;
+}
+.commontable tr td:first-child{
+	width:200px;
+	text-align:center;
+	background-color:#f0f0f0;
+}
+
+
+.listtable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.listtable th, .listtable td {
+    border-top: 1px solid #ddd; /* 상단 경계선 */
+ 	border-bottom: 1px solid #ddd; /* 하단 경계선 */
+ 	border-left: none; /* 왼쪽 경계선 제거 */
+ 	border-right: none; /* 오른쪽  경계선 제거 */
+    text-align: center;
+    padding: 10px;
+}
+.listtable th {
+    background-color: #f0f0f0; /* 연한 회색 배경 */
+    color: #333; /* 텍스트 색상 */
+}
+
+.listtable td {
+    background-color: #fff;
+}
+
+textarea {
+        width: 100%; /* 텍스트 영역 너비 100% */
+        padding: 10px; /* 패딩 추가 */
+        border: 1px solid #ddd; /* 테두리 스타일 */
+        border-radius: 5px; /* 모서리 둥글게 */
+        resize: vertical; /* 수직 방향으로만 크기 조절 가능 */
+}
+
+
+
+.pinned {
+    color: #ff5c5c;
+    font-weight: bold;
+}
+.bold {
+    font-weight: bold;
+}
+
+.num { width: 100px; }
+.writer { width: 150px; }
+.subject { width: 450px; }
+.regdate { width: 200px; }
+.count { width: 100px; }
+
+.button {
+ background-color: #1b2a4e; /* 기본 배경 색상 */
+ color: white; /* 텍스트 색상 */
+ border: none;
+ padding: 10px 15px;
+ text-align: center;
+ display: inline-block;
+ border-radius: 5px;
+ cursor: pointer;
+ margin-top: 10px;
+}
+.button:hover {
+    background-color: #35549b;
+}
+
+.button:active {
+	background-color: #4a6fa5; /* 클릭 시 배경 색상 */
+}
+
+.search-container {
+       text-align: center;
+       margin: 20px 0;
+}
+
+select, input[type="text"] {
+       padding: 10px;
+       margin-right: 10px;
+       border: 1px solid #ccc;
+       border-radius: 4px;
+}
+   
+.select-container {
+   position: relative;
+   display: inline-block;
+}
+
+.selectdropdown {
+    padding: 10px;
+    font-size: 16px;
+    appearance: none; /* 기본 드롭다운 화살표 숨기기 */
+    background: none;
+    border: 1px solid #ccc;
+    cursor: pointer;
+}
+
+.selectarrow {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    font-size: 20px; /* 화살표 크기 조정 */
+	pointer-events: none; /* 화살표 클릭 방지 */
+	color: #333; /* 화살표 색상 조정 (필요시) */
+}
+
+.content {
+    height: auto; /* 내용란 높이 자동 조정 */
+    overflow-y: auto; /* 내용이 많을 경우 스크롤 */
+}
+.content pre {
+    margin: 0;
+    width: 100%;
+    height: auto; /* 자동 높이 */
+    font-size: 16px;
+    font-weight: bold;
+}
+.topfixlabel {
+    margin-bottom: 20px; /* 여백 추가 */
+    font-family: Arial, sans-serif; /* 폰트 설정 */
+}
+
+.custom-checkbox {
+    display: flex; /* 플렉스박스 사용 */
+    align-items: center; /* 수직 중앙 정렬 */
+    cursor: pointer; /* 커서 모양 변경 */
+    position: relative; /* 위치 설정 */
+    padding-left: 30px; /* 체크박스 왼쪽 여백 */
+}
+
+.custom-checkbox input {
+    display: none; /* 기본 체크박스 숨기기 */
+}
+
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px; /* 체크박스 높이 */
+    width: 20px; /* 체크박스 너비 */
+    background-color: #eee; /* 배경색 */
+    border-radius: 5px; /* 모서리 둥글게 */
+    border: 2px solid #007bff; /* 테두리 색상 */
+}
+
+.custom-checkbox input:checked + .checkmark {
+    background-color: #007bff; /* 체크 시 배경색 */
+}
+
+.checkmark::after {
+    content: ""; /* 체크 표시 */
+    position: absolute;
+    display: none; /* 기본적으로 숨김 */
+}
+
+.custom-checkbox input:checked + .checkmark::after {
+    display: block; /* 체크 시 표시 */
+}
+
+.custom-checkbox .checkmark::after {
+    left: 7px; /* 체크 표시 위치 */
+    top: 3px; /* 체크 표시 위치 */
+    width: 5px; /* 체크 표시 너비 */
+    height: 10px; /* 체크 표시 높이 */
+    border: solid white; /* 체크 표시 색상 */
+    border-width: 0 2px 2px 0; /* 체크 표시 형태 */
+    transform: rotate(45deg); /* 체크 표시 회전 */
+}
+
+.custom-checkbox span {
+    margin-right: 10px; /* 텍스트와 체크박스 사이 여백 */
+}

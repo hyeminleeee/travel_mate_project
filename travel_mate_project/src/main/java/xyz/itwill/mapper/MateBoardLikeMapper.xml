@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.itwill.mapper.MateBoardLikeMapper">
+	<!-- 로그인 사용자가 좋아요 눌렀는지 안 눌렀는지 확인용 : 1이면 누름, 0이면 안누름 -->
+	<select id="selectMateBoardLikeCount" resultType="int">
+		select count(*) from mate_boardlike where board_no=#{boardNo} and user_id=#{userId}
+	</select>
+	
+	<!-- view페이지 makeboardLike 정보 전달용 -->
+	<select id="selectMateBoardLike" resultType="MateBoardLike">
+		select like_no, board_no, user_id, like_status from mate_boardlike 
+			where board_no=#{boardNo}
+	</select>
+	
+	<!-- 좋아요 -->
+	<insert id="likeUp">
+		<selectKey resultType="int" keyProperty="likeNo" order="BEFORE">
+			select mate_boardlike_seq.nextval from dual
+		</selectKey>
+		insert into mate_boardlike values(#{likeNo}, #{boardNo}, #{userId}, 1)
+	</insert>
+	
+	<!-- 좋아요 취소 -->
+	<delete id="likeDown">
+		delete from mate_boardlike where board_no=#{boardNo} and user_id=#{userId}
+	</delete>
+	
+	<!-- 해당 코스 삭제 시 좋아요 삭제 -->
+	<delete id="deleteMateBoardLike">
+		delete from mate_boardlike where board_no=${boardNo}
+	</delete>
+	
+	<select id="selectMateBoardLikeByMateBoardNoUserid" resultType="MateBoardLike">
+		select like_no, board_no, user_id, like_status from mate_boardlike 
+			where board_no = #{boardNo} and user_id=#{userId}
+	</select>
+	
+</mapper>

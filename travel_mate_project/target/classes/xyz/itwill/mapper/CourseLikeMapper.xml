@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.itwill.mapper.CourseLikeMapper">
+	<!-- 로그인 사용자가 좋아요 눌렀는지 안 눌렀는지 확인용 : 1이면 누름, 0이면 안누름 -->
+	<select id="selectCourseLikeCount" resultType="int">
+		select count(*) from course_like where course_no=#{courseNo} and user_id=#{userId}
+	</select>
+	
+	<!-- view페이지 courseLike 정보 전달용 -->
+	<select id="selectCourseLike" resultType="CourseLike">
+		select like_no, course_no, user_id, like_status from course_like 
+			where course_no=#{courseNo}
+	</select>
+	
+	<!-- 좋아요 -->
+	<insert id="likeUp">
+		<selectKey resultType="int" keyProperty="likeNo" order="BEFORE">
+			select course_like_seq.nextval from dual
+		</selectKey>
+		insert into course_like values(#{likeNo}, #{courseNo}, #{userId}, 1)
+	</insert>
+	
+	<!-- 좋아요 취소 -->
+	<delete id="likeDown">
+		delete from course_like where course_no=#{courseNo} and user_id=#{userId}
+	</delete>
+	
+	<!-- 해당 코스 삭제 시 좋아요 삭제 -->
+	<delete id="deleteCourseLike">
+		delete from course_like where course_no=${courseNo}
+	</delete>
+	
+	<select id="selectCourseLikeByCourseNoUserid" resultType="CourseLike">
+		select like_no, course_no, user_id, like_status from course_like 
+			where course_no = #{courseNo} and user_id=#{userId}
+	</select>
+	
+</mapper>
